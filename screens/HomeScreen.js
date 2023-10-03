@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/core';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { auth } from '../firebase';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,14 +36,18 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.settingsContainer}>
-      <Text style={styles.emailText}>Email: {auth.currentUser?.email}</Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleSignOut} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <Text style={styles.profileText}>Email: {auth.currentUser?.email}</Text>
+      <TouchableOpacity style={styles.profileButton}>
+        <Text style={styles.buttonText}>Edit Profile</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.profileButton}>
+        <Text style={styles.buttonText}>Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleSignOut} style={styles.logoutButton}>
+        <Text style={styles.buttonText}>Logout</Text>
+      </TouchableOpacity>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -98,30 +102,35 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 16,
   },
-  settingsContainer: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emailText: {
-    fontSize: 20,
+  profileText: {
+    fontSize: 24,
+    color: 'dodgerblue',
     marginBottom: 20,
   },
-  buttonContainer: {
-    width: '80%',
-    position: 'absolute',
-    bottom: 10, // Adjust this value to control the distance from the bottom
-  },
-  logoutButton: {
-    backgroundColor: 'tomato',
-    width: '100%', // Adjust the width as needed
+  profileButton: {
+    backgroundColor: 'dodgerblue',
+    width: '80%', // Adjust the width as needed
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    marginBottom: 10,
   },
-  logoutText: {
+  buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: 'tomato', 
+    width: '80%',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 10,
   },
 });
