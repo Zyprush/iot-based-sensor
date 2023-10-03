@@ -37,7 +37,7 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
-      <Text style={styles.profileText}>Email: {auth.currentUser?.email}</Text>
+      {/*<Text style={styles.profileText}>Email: {auth.currentUser?.email}</Text>*/}
       <TouchableOpacity style={styles.profileButton}>
         <Text style={styles.buttonText}>Edit Profile</Text>
       </TouchableOpacity>
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   profileButton: {
     backgroundColor: 'dodgerblue',
-    width: '80%', // Adjust the width as needed
+    width: '80%',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
