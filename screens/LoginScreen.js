@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/core'
 import React, { useEffect, useState } from 'react'
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { auth } from '../firebase'
+import RegisterScreen from './RegisterScreen'
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('')
@@ -19,16 +20,6 @@ const LoginScreen = () => {
     return unsubscribe
   }, [])
 
-  const handleSignUp = () => {
-    auth
-      .createUserWithEmailAndPassword(email, password)
-      .then(userCredentials => {
-        const user = userCredentials.user;
-        console.log('Registered with:', user.email);
-      })
-      .catch(error => alert(error.message))
-  }
-
   const handleLogin = () => {
     auth
       .signInWithEmailAndPassword(email, password)
@@ -39,11 +30,17 @@ const LoginScreen = () => {
       .catch(error => alert(error.message))
   }
 
+  const navigateToRegister = () => {
+    // Navigate to the RegisterScreen component
+    navigation.navigate('Register');
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior="padding"
     >
+      <Text style={styles.textContainer}>Aqua<Text style={{ color: 'tomato' }}>Lert</Text></Text>
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Email"
@@ -68,10 +65,10 @@ const LoginScreen = () => {
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={handleSignUp}
-          style={[styles.button, styles.buttonOutline]}
+          onPress={navigateToRegister}
+          style={styles.registerButton}
         >
-          <Text style={styles.buttonOutlineText}>Register</Text>
+          <Text style={styles.registerButtonText}>Don't have an account yet? <Text style={{ color: 'dodgerblue' }}>Register</Text></Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -97,7 +94,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   buttonContainer: {
-    width: '60%',
+    width: '80%',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 40,
@@ -109,20 +106,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  buttonOutline: {
-    backgroundColor: 'white',
-    marginTop: 5,
-    borderColor: '#0782F9',
-    borderWidth: 2,
+  registerButton: {
+    marginTop: 10,
   },
   buttonText: {
     color: 'white',
     fontWeight: '700',
     fontSize: 16,
   },
-  buttonOutlineText: {
-    color: '#0782F9',
-    fontWeight: '700',
+  registerButtonText: {
+    color: 'black',
     fontSize: 16,
   },
+  textContainer: {
+    color:'dodgerblue',
+    fontSize: 50,
+    alignItems: 'center',
+    marginBottom: 20,
+    fontWeight: 'bold',
+  }
 })
