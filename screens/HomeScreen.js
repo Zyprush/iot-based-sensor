@@ -36,11 +36,13 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Profile: {auth.currentUser?.email}</Text>
-      <TouchableOpacity onPress={handleSignOut}>
-        <Text>Logout</Text>
-      </TouchableOpacity>
+    <View style={styles.settingsContainer}>
+      <Text style={styles.emailText}>Email: {auth.currentUser?.email}</Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleSignOut} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -95,5 +97,31 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '700',
     fontSize: 16,
+  },
+  settingsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emailText: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  buttonContainer: {
+    width: '80%',
+    position: 'absolute',
+    bottom: 10, // Adjust this value to control the distance from the bottom
+  },
+  logoutButton: {
+    backgroundColor: 'tomato',
+    width: '100%', // Adjust the width as needed
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  logoutText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
