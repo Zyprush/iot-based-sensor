@@ -1,27 +1,90 @@
 import { useNavigation } from '@react-navigation/core';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { auth } from '../firebase';
+import { auth, database } from '../firebase';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 
-const TemperatureScreen = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Temperature: 27°C - Normal</Text>
-  </View>
-);
+const TemperatureScreen = () => {
+  const [temperature, setTemperature] = useState(null);
+  const [conditionMessage, setConditionMessage] = useState('Loading...');
+
+  useEffect(() => {
+    const temperatureRef = database.ref('/sensorData/temperatureValue');
+
+    temperatureRef.on('value', (snapshot) => {
+      const temperatureValue = snapshot.val();
+      setTemperature(temperatureValue);
+
+      // Check temperature conditions and set the condition message accordingly
+      if (temperatureValue >= 36) {
+        setConditionMessage('Fatal (Hot)');
+      } else if (temperatureValue <= 10) {
+        setConditionMessage('Fatal (Cold)');
+      } else if (temperatureValue >= 28 && temperatureValue <= 30) {
+        setConditionMessage('Optimal');
+      } else if (temperatureValue >= 31 && temperatureValue <= 35) {
+        setConditionMessage('Alert');
+      } else if (temperatureValue >= 21 && temperatureValue <= 27) {
+        setConditionMessage('Normal');
+      }
+    });
+
+    // Clean up the Firebase listener when the component unmounts
+    return () => temperatureRef.off('value');
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      {/* Top Container */}
+      <View style={styles.topContainer}>
+        <Ionicons name="md-thermometer" size={100} color="dodgerblue" />
+        <View>
+          <Text  style={styles.textReading}>
+          {temperature !== null ? temperature + ' °C' : 'Loading...'}
+          </Text> 
+          <Text style={styles.textCondition}>Condition: {conditionMessage}</Text>
+        </View>
+      </View>
+
+      {/* Bottom Container */}
+      <View style={styles.bottomContainer}>
+        {/* for graph */}
+        
+      </View>
+    </View>
+  );
+};
 
 const PhSensorScreen = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Ph sensor: 7 - Normal</Text>
+  <View style={styles.container}>
+    <View style={styles.topContainer}>
+      <Ionicons name="md-water" size={100} color="dodgerblue" />
+      <View>
+        <Text style={styles.textReading}>7 PH</Text>
+        <Text style={styles.textCondition}>Normal</Text>
+      </View>
+    </View>
+    <View style={styles.bottomContainer}>
+        {/* for graph */}
+    </View>
   </View>
 );
 
 const TurbidityScreen = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Turbidity: 30 - Cloudy</Text>
+  <View style={styles.container}>
+    <View style={styles.topContainer}>
+      <Ionicons name="ios-speedometer" size={100} color="dodgerblue" />
+      <View>
+        <Text style={styles.textReading}>650</Text>
+        <Text style={styles.textCondition}>Cloudy</Text>
+      </View>
+    </View>
+    <View style={styles.bottomContainer}>
+        {/* for graph */}
+    </View>
   </View>
 );
 
@@ -36,7 +99,7 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
+    <KeyboardAvoidingView style={styles.containerSettings} behavior="padding">
       {/*<Text style={styles.profileText}>Email: {auth.currentUser?.email}</Text>*/}
       <TouchableOpacity style={styles.profileButton}>
         <Text style={styles.buttonText}>Edit Profile</Text>
@@ -86,8 +149,6 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   button: {
     backgroundColor: '#0782F9',
@@ -101,11 +162,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '700',
     fontSize: 16,
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   profileText: {
     fontSize: 24,
@@ -133,4 +189,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+  tabscreen: {
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: 'dodgerblue',
+  },
+  textOnTab: {
+    color: 'white',
+    fontSize: 26,
+  },
+  topContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  bottomContainer: {
+    flex: 2,
+    backgroundColor: 'dodgerblue',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textReading: {
+    fontSize: 50,
+    color: 'dodgerblue',
+    fontWeight: "bold",
+  },
+  textCondition: {
+    fontSize: 20,
+    fontWeight: '500'
+  },
+  containerSettings: {
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  }
 });

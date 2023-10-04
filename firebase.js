@@ -1,11 +1,15 @@
 import firebase from "firebase/compat";
+import "firebase/database";
+
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAtPxsO2jxjPEcIh7yY3KEw2DH7WAVCq_0",
-    authDomain: "tilapia-auth.firebaseapp.com",
-    projectId: "tilapia-auth",
-    storageBucket: "tilapia-auth.appspot.com",
-    messagingSenderId: "432788402999",
-    appId: "1:432788402999:web:7e63b5cf02310e6a6fe0b2"
+  apiKey: "AIzaSyCdJ3UUlxQ1w1zcqBIUWXrRcnaxWbjOODE",
+  authDomain: "iot-based-sensor-data.firebaseapp.com",
+  databaseURL: "https://iot-based-sensor-data-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "iot-based-sensor-data",
+  storageBucket: "iot-based-sensor-data.appspot.com",
+  messagingSenderId: "966127105278",
+  appId: "1:966127105278:web:8cfc7030f865c1136321af"
 };
 
 // Initialize Firebase
@@ -17,5 +21,6 @@ if (firebase.apps.length === 0) {
 }
 
 const auth = firebase.auth()
+const database = firebase.database()
 
-export { auth };
+export { auth, database };
