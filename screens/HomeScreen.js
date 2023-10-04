@@ -1,9 +1,11 @@
-import { useNavigation } from '@react-navigation/core';
 import React, { useState, useEffect } from 'react';
-import { KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { auth, database } from '../firebase';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { LineChart } from 'react-native-chart-kit';
+
+const screenWidth = Dimensions.get('window').width;
 
 const Tab = createBottomTabNavigator();
 
@@ -11,25 +13,44 @@ const TemperatureScreen = () => {
   const [temperature, setTemperature] = useState(null);
   const [conditionMessage, setConditionMessage] = useState('Loading...');
 
+  const data = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [
+      {
+        data: [29.63, 30, 60, 20, 30, 30, 20],
+        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        strokeWidth: 3,
+      },
+    ],
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: 'dodgerblue',
+    backgroundGradientTo: 'dodgerblue',
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`
+  };
+
   useEffect(() => {
     const temperatureRef = database.ref('/sensorData/temperatureValue');
+    const temperaturesRef = database.ref('/sensorData/temperatureValues');
 
     temperatureRef.on('value', (snapshot) => {
       const temperatureValue = snapshot.val();
       setTemperature(temperatureValue);
 
       // Check temperature conditions and set the condition message accordingly
-      if (temperatureValue >= 36) {
-        setConditionMessage('Fatal (Hot)');
-      } else if (temperatureValue <= 10) {
-        setConditionMessage('Fatal (Cold)');
-      } else if (temperatureValue >= 28 && temperatureValue <= 30) {
-        setConditionMessage('Optimal');
-      } else if (temperatureValue >= 31 && temperatureValue <= 35) {
-        setConditionMessage('Alert');
-      } else if (temperatureValue >= 21 && temperatureValue <= 27) {
-        setConditionMessage('Normal');
+      if (temperatureValue >= 30 && temperatureValue <= 32) {
+        setConditionMessage('Optimal (Growth)');
+      } else if (temperatureValue >= 27 && temperatureValue < 30) {
+        setConditionMessage('Acceptable');
+      } else if (temperatureValue >= 20 && temperatureValue < 27) {
+        setConditionMessage('Suboptimal');
+      } else if (temperatureValue < 20) {
+        setConditionMessage('Too Cold');
+      } else {
+        setConditionMessage('Too Hot');
       }
+
     });
 
     // Clean up the Firebase listener when the component unmounts
@@ -52,41 +73,174 @@ const TemperatureScreen = () => {
       {/* Bottom Container */}
       <View style={styles.bottomContainer}>
         {/* for graph */}
-        
+        <View style={styles.containerGraph}>
+          <View>
+          <LineChart
+            data={data}
+            width={screenWidth}
+            height={250}
+            chartConfig={chartConfig}
+          />
+          </View>
+        </View>
       </View>
     </View>
   );
 };
 
-const PhSensorScreen = () => (
-  <View style={styles.container}>
-    <View style={styles.topContainer}>
-      <Ionicons name="md-water" size={100} color="dodgerblue" />
-      <View>
-        <Text style={styles.textReading}>7 PH</Text>
-        <Text style={styles.textCondition}>Normal</Text>
-      </View>
-    </View>
-    <View style={styles.bottomContainer}>
-        {/* for graph */}
-    </View>
-  </View>
-);
+const PhSensorScreen = () => {
+  const [ph, setph] = useState(null);
+  const [conditionMessage, setConditionMessage] = useState('Loading...');
 
-const TurbidityScreen = () => (
+  const data = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [
+      {
+        data: [2, 7, 9, 7, 3, 5, 2],
+        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        strokeWidth: 3,
+      },
+    ],
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: 'dodgerblue',
+    backgroundGradientTo: 'dodgerblue',
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`
+  };
+
+  useEffect(() => {
+    const phRef = database.ref('/sensorData/phValue');
+
+    phRef.on('value', (snapshot) => {
+      const phValue = snapshot.val();
+      setph(phValue);
+
+      // Check pH conditions and set the condition message accordingly
+      if (phValue >= 8 && phValue <= 9) {
+        setConditionMessage('Optimal');
+      } else if (phValue >= 6 && phValue < 8) {
+        setConditionMessage('Acceptable');
+      } else if (phValue >= 5 && phValue < 6) {
+        setConditionMessage('Caution');
+      } else if (phValue >= 4 && phValue < 5) {
+        setConditionMessage('Alert');
+      } else if (phValue < 4) {
+        setConditionMessage('Fatal');
+      } else {
+        setConditionMessage('Not Suitable');
+      }
+    });
+
+    // Clean up the Firebase listener when the component unmounts
+    return () => phRef.off('value');
+  }, []);
+  
+  return (
+
   <View style={styles.container}>
     <View style={styles.topContainer}>
-      <Ionicons name="ios-speedometer" size={100} color="dodgerblue" />
-      <View>
-        <Text style={styles.textReading}>650</Text>
-        <Text style={styles.textCondition}>Cloudy</Text>
-      </View>
+        <Ionicons name="md-water" size={100} color="dodgerblue" />
+        <View>
+          <Text  style={styles.textReading}>
+          {ph !== null ? ph + ' pH' : 'Loading...'}
+          </Text> 
+          <Text style={styles.textCondition}>Condition: {conditionMessage}</Text>
+        </View>
     </View>
     <View style={styles.bottomContainer}>
-        {/* for graph */}
+    {/* for graph */}
+    <View style={styles.containerGraph}>
+      <View>
+        <LineChart
+            data={data}
+            width={screenWidth}
+            height={250}
+            chartConfig={chartConfig}
+          />
+          </View>
+      </View>
     </View>
   </View>
-);
+  );
+};
+
+
+const TurbidityScreen = () => {
+  const [turbidity, setturbidity] = useState(null);
+  const [conditionMessage, setConditionMessage] = useState('Loading...');
+
+  const data = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [
+      {
+        data: [20, 10, 5, 40, 30, 5, 20],
+        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        strokeWidth: 3,
+      },
+    ],
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: 'dodgerblue',
+    backgroundGradientTo: 'dodgerblue',
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`
+  };
+
+  useEffect(() => {
+    const turbidityRef = database.ref('/sensorData/turbidityValue');
+
+    turbidityRef.on('value', (snapshot) => {
+      const turbidityValue = snapshot.val();
+      setturbidity(turbidityValue);
+
+      // Check turbidity conditions and set the condition message accordingly
+      if (turbidityValue >= 10 && turbidityValue <= 20) {
+        setConditionMessage('Optimal (Growth)');
+      } else if (turbidityValue >= 5 && turbidityValue < 10) {
+        setConditionMessage('Acceptable');
+      } else if (turbidityValue >= 1 && turbidityValue < 5) {
+        setConditionMessage('Suboptimal');
+      } else if (turbidityValue <= 1) {
+        setConditionMessage('Too Clear');
+      } else {
+        setConditionMessage('Too Cloudy');
+      }
+
+    });
+
+    // Clean up the Firebase listener when the component unmounts
+    return () => turbidityRef.off('value');
+  }, []);
+  
+  return (
+
+  <View style={styles.container}>
+    <View style={styles.topContainer}>
+        <Ionicons name="md-thermometer" size={100} color="dodgerblue" />
+        <View>
+          <Text  style={styles.textReading}>
+          {turbidity !== null ? turbidity + ' °C' : 'Loading...'}
+          </Text> 
+          <Text style={styles.textCondition}>Condition: {conditionMessage}</Text>
+        </View>
+    </View>
+    <View style={styles.bottomContainer}>
+    {/* for graph */}
+    <View style={styles.containerGraph}>
+      <View>
+        <LineChart
+            data={data}
+            width={screenWidth}
+            height={250}
+            chartConfig={chartConfig}
+          />
+          </View>
+      </View>
+    </View>
+  </View>
+  );
+};
 
 const SettingsScreen = ({ navigation }) => {
   const handleSignOut = () => {
@@ -225,5 +379,12 @@ const styles = StyleSheet.create({
     flex: 1, 
     justifyContent: 'center', 
     alignItems: 'center',
-  }
+  },
+  containerGraph: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'dodgerblue',
+    color: 16,
+  },
 });
