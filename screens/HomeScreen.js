@@ -31,8 +31,7 @@ const TemperatureScreen = () => {
   };
 
   useEffect(() => {
-    const temperatureRef = database.ref('/sensorData/temperatureValue');
-    const temperaturesRef = database.ref('/sensorData/temperatureValues');
+    const temperatureRef = database.ref('/sensorData/temperature/temperature');
 
     temperatureRef.on('value', (snapshot) => {
       const temperatureValue = snapshot.val();
@@ -110,7 +109,7 @@ const PhSensorScreen = () => {
   };
 
   useEffect(() => {
-    const phRef = database.ref('/sensorData/phValue');
+    const phRef = database.ref('/sensorData/pH/pH');
 
     phRef.on('value', (snapshot) => {
       const phValue = snapshot.val();
@@ -188,7 +187,7 @@ const TurbidityScreen = () => {
   };
 
   useEffect(() => {
-    const turbidityRef = database.ref('/sensorData/turbidityValue');
+    const turbidityRef = database.ref('/sensorData/turbidity/turbidity');
 
     turbidityRef.on('value', (snapshot) => {
       const turbidityValue = snapshot.val();
