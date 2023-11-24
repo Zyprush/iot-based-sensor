@@ -434,7 +434,7 @@ const SettingsScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.profileButton}>
-          <Text style={styles.buttonText2}>Settings</Text>
+          <Text style={styles.buttonText2}>{auth.currentUser?.email}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleSignOut} style={styles.logoutButton}>
