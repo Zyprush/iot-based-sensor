@@ -13,7 +13,7 @@ const RegisterScreen = () => {
       .createUserWithEmailAndPassword(email, password)
       .then((userCredentials) => {
         const user = userCredentials.user;
-        console.log('Registered with:', user.email);
+        //console.log('Registered with:', user.email);
         // You can navigate to the LoginScreen or any other screen after registration
         navigation.replace('Login');
       })
