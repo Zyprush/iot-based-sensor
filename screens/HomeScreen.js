@@ -455,19 +455,22 @@ const EditDeviceAddressModal = ({ visible, onClose, onSave, currentAddress  }) =
   return (
     <Modal visible={visible} animationType="slide">
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Enter Device Address:</Text>
+        <Text style={{color: 'dodgerblue', fontSize: 25, marginBottom: 10,fontWeight: 'bold'}}>Enter Device ID:</Text>
         <TextInput
-          style={{ borderWidth: 1, borderColor: 'gray', padding: 10, marginTop: 10 }}
+          style={{ borderWidth: 1, borderColor: 'gray', padding: 10, marginTop: 10, width: '80%', fontSize: 20}}
           placeholder="Enter 8-digit address"
           onChangeText={setAddress}
           value={address}
           keyboardType="numeric"
           maxLength={8}
         />
-        <View style={{ flexDirection: 'row', marginTop: 20 }}>
-          <Button title="Save" onPress={handleSave} />
-          <Button title="Cancel" onPress={onClose} />
-        </View>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.buttonText}>Save</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={onClose}>
+          <Text style={styles.buttonText1}>Cancel</Text>
+        </TouchableOpacity>
       </View>
     </Modal>
   );
@@ -513,6 +516,7 @@ const SettingsScreen = ({ navigation }) => {
       userAddressRef.set(serializedAddress)
         .then(() => {
           //console.log('Address saved successfully:', serializedAddress);
+          fetchDeviceAddress();
           closeModal(); // Close the modal after successful save
         })
         .catch((error) => {
@@ -535,7 +539,7 @@ const SettingsScreen = ({ navigation }) => {
           style={styles.profileButton}
           onPress={() => setModalVisible(true)}
         >
-          <Text style={styles.buttonText2}>Edit Device Address</Text>
+          <Text style={styles.buttonText2}>Edit Device ID</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.profileButton}>
@@ -621,6 +625,15 @@ const styles = StyleSheet.create({
   },
   profileButton: {
     backgroundColor: 'white',
+    width: '80%',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  saveButton: {
+    marginTop: 50,
+    backgroundColor: 'dodgerblue',
     width: '80%',
     padding: 15,
     borderRadius: 10,
