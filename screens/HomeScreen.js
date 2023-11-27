@@ -7,12 +7,50 @@ import { LineChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
+const currentUser = auth.currentUser;
+
+const fetchDeviceAddress = async () => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userEmail = currentUser.email.replace('.', '_');
+      const userAddressRef = database.ref(`users/${userEmail}/address_number`);
+      const snapshot = await userAddressRef.once('value');
+      const deviceAddress = snapshot.val();
+
+      if (deviceAddress) {
+        return deviceAddress;
+      } else {
+        //console.error('No address number found for the user.');
+        return '00000000'; // Return a default value if address not found
+      }
+    } else {
+      //console.error('No user is currently authenticated.');
+      return '00000000'; // Return a default value if no user is authenticated
+    }
+  } catch (error) {
+    //console.error('Error fetching device address:', error);
+    return '00000000'; // Return a default value in case of an error
+  }
+};
+
+
 const Tab = createBottomTabNavigator();
 
 const TemperatureScreen = () => {
   const [temperature, setTemperature] = useState(null);
   const [conditionMessage, setConditionMessage] = useState('Loading...');
   const [dailyAverages, setDailyAverages] = useState([0, 0, 0, 0, 0, 0, 0]); // Initialize daily averages
+  const [deviceAddress, setDeviceAddress] = useState('00000000');
+
+  useEffect(() => {
+    const fetchDeviceAddressAndUpdateState = async () => {
+      const address = await fetchDeviceAddress();
+      setDeviceAddress(address);
+    };
+
+    fetchDeviceAddressAndUpdateState();
+  }, []);
 
   const data = {
     labels: ['Sun','Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -32,68 +70,74 @@ const TemperatureScreen = () => {
   };
 
   useEffect(() => {
-    const temperatureRef = database.ref('/sensorData/temperature/temperature');
-
-    temperatureRef.on('value', (snapshot) => {
-      const temperatureValue = snapshot.val();
-      setTemperature(temperatureValue);
-
-      // Check temperature conditions based on the current temperature value
-      if (temperatureValue !== null) {
-        if (temperatureValue >= 30 && temperatureValue <= 32) {
-          setConditionMessage('Optimal (Growth)');
-        } else if (temperatureValue >= 27 && temperatureValue < 30) {
-          setConditionMessage('Acceptable');
-        } else if (temperatureValue >= 20 && temperatureValue < 27) {
-          setConditionMessage('Suboptimal');
-        } else if (temperatureValue < 20) {
-          setConditionMessage('Too Cold');
-        } else {
-          setConditionMessage('Too Hot');
+    if (deviceAddress !== '00000000') {
+      const temperatureRef = database.ref(`/sensorData/temperature-${deviceAddress}/temperature-${deviceAddress}`);
+      temperatureRef.on('value', (snapshot) => {
+        const temperatureValue = snapshot.val();
+        setTemperature(temperatureValue);
+  
+        // Check temperature conditions based on the current temperature value
+        if (temperatureValue !== null) {
+          if (temperatureValue >= 30 && temperatureValue <= 32) {
+            setConditionMessage('Optimal (Growth)');
+          } else if (temperatureValue >= 27 && temperatureValue < 30) {
+            setConditionMessage('Acceptable');
+          } else if (temperatureValue >= 20 && temperatureValue < 27) {
+            setConditionMessage('Suboptimal');
+          } else if (temperatureValue < 20) {
+            setConditionMessage('Too Cold');
+          } else {
+            setConditionMessage('Too Hot');
+          }
         }
-      }
-    });
-
-    return () => temperatureRef.off('value'); // Cleanup Firebase listener
-  }, []);
+      });
+  
+      return () => temperatureRef.off('value'); // Cleanup Firebase listener
+    } else {
+      setTemperature('0');
+      setConditionMessage('No Device ID')
+    }
+  }, [deviceAddress]);
 
   useEffect(() => {
-    const historyRef = database.ref('/sensorData/temperatures');
-  
-    historyRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      const dailyTemperatures = {};
-  
-      // Loop through the data and organize temperatures by day
-      for (const key in data) {
-        const timestamp = key.split('_')[0]; // Extract the date part
-        const utcTimestamp = new Date(timestamp); // Create a Date object using the provided timestamp
-        const manilaTimestamp = new Date(utcTimestamp.getTime() + 8 * 60 * 60 * 1000); // Convert UTC time to Manila time (UTC+8)
-        
-        const date = manilaTimestamp.getDay(); // Get the day of the week in Manila time (0-6)
-  
-        if (!(date in dailyTemperatures)) {
-          dailyTemperatures[date] = [];
+    if (deviceAddress !== '00000000') {
+      const historyRef = database.ref(`/sensorData/temperature-${deviceAddress}s`);
+    
+      historyRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        const dailyTemperatures = {};
+    
+        // Loop through the data and organize temperatures by day
+        for (const key in data) {
+          const timestamp = key.split('_')[0]; // Extract the date part
+          const utcTimestamp = new Date(timestamp); // Create a Date object using the provided timestamp
+          const manilaTimestamp = new Date(utcTimestamp.getTime() + 8 * 60 * 60 * 1000); // Convert UTC time to Manila time (UTC+8)
+          
+          const date = manilaTimestamp.getDay(); // Get the day of the week in Manila time (0-6)
+    
+          if (!(date in dailyTemperatures)) {
+            dailyTemperatures[date] = [];
+          }
+    
+          dailyTemperatures[date].push(parseFloat(data[key])); // Store temperatures by day
         }
-  
-        dailyTemperatures[date].push(parseFloat(data[key])); // Store temperatures by day
-      }
-  
-      // Calculate daily averages
-      const averages = [0, 0, 0, 0, 0, 0, 0];
-      for (const day in dailyTemperatures) {
-        const temperatures = dailyTemperatures[day];
-        if (temperatures.length > 0) {
-          const average = temperatures.reduce((acc, val) => acc + val, 0) / temperatures.length;
-          averages[day] = average;
+    
+        // Calculate daily averages
+        const averages = [0, 0, 0, 0, 0, 0, 0];
+        for (const day in dailyTemperatures) {
+          const temperatures = dailyTemperatures[day];
+          if (temperatures.length > 0) {
+            const average = temperatures.reduce((acc, val) => acc + val, 0) / temperatures.length;
+            averages[day] = average;
+          }
         }
-      }
-  
-      setDailyAverages(averages); // Update daily averages state
-    });
-  
-    return () => historyRef.off('value'); // Cleanup Firebase listener for history
-  }, []);
+    
+        setDailyAverages(averages); // Update daily averages state
+      });
+    
+      return () => historyRef.off('value'); // Cleanup Firebase listener for history
+    }
+  }, [deviceAddress]);
   
   return (
     <View style={styles.container}>
@@ -131,6 +175,16 @@ const PhSensorScreen = () => {
   const [ph, setPh] = useState(null);
   const [conditionMessage, setConditionMessage] = useState('Loading...');
   const [dailyAverages, setDailyAverages] = useState([0, 0, 0, 0, 0, 0, 0]); // Initialize daily averages
+  const [deviceAddress, setDeviceAddress] = useState('00000000');
+
+  useEffect(() => {
+    const fetchDeviceAddressAndUpdateState = async () => {
+      const address = await fetchDeviceAddress();
+      setDeviceAddress(address);
+    };
+
+    fetchDeviceAddressAndUpdateState();
+  }, []);
 
   const data = {
     labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -150,70 +204,77 @@ const PhSensorScreen = () => {
   };
 
   useEffect(() => {
-    const phRef = database.ref('/sensorData/pH/pH');
-
-    phRef.on('value', (snapshot) => {
-      const phValue = snapshot.val();
-      setPh(phValue);
-
-      // Check pH conditions based on the current pH value
-      if (phValue !== null) {
-        if (phValue >= 8 && phValue <= 9) {
-          setConditionMessage('Optimal');
-        } else if (phValue >= 6 && phValue < 8) {
-          setConditionMessage('Acceptable');
-        } else if (phValue >= 5 && phValue < 6) {
-          setConditionMessage('Caution');
-        } else if (phValue >= 4 && phValue < 5) {
-          setConditionMessage('Alert');
-        } else if (phValue < 4) {
-          setConditionMessage('Fatal');
-        } else {
-          setConditionMessage('Not Suitable');
+    if (deviceAddress !== '00000000') {
+      const phRef = database.ref(`/sensorData/pH-${deviceAddress}/pH-${deviceAddress}`);
+  
+      phRef.on('value', (snapshot) => {
+        const phValue = snapshot.val();
+        setPh(phValue);
+  
+        // Check pH conditions based on the current pH value
+        if (phValue !== null) {
+          if (phValue >= 8 && phValue <= 9) {
+            setConditionMessage('Optimal');
+          } else if (phValue >= 6 && phValue < 8) {
+            setConditionMessage('Acceptable');
+          } else if (phValue >= 5 && phValue < 6) {
+            setConditionMessage('Caution');
+          } else if (phValue >= 4 && phValue < 5) {
+            setConditionMessage('Alert');
+          } else if (phValue < 4) {
+            setConditionMessage('Fatal');
+          } else {
+            setConditionMessage('Not Suitable');
+          }
         }
-      }
-    });
-
-    return () => phRef.off('value'); // Cleanup Firebase listener for real-time pH data
-  }, []);
+      });
+  
+      return () => phRef.off('value'); // Cleanup Firebase listener for real-time pH data
+    } else {
+      setPh('0');
+      setConditionMessage('No device ID.')
+    }
+  }, [deviceAddress]);
 
   useEffect(() => {
-    const historyRef = database.ref('/sensorData/pHs');
-
-    historyRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      const dailyPhValues = {};
-
-      // Loop through the data and organize pH values by day
-      for (const key in data) {
-        const timestamp = key.split('_')[0]; // Extract the date part
-        const utcTimestamp = new Date(timestamp); // Create a Date object using the provided timestamp
-        const manilaTimestamp = new Date(utcTimestamp.getTime() + 8 * 60 * 60 * 1000); // Convert UTC time to Manila time (UTC+8)
-
-        const day = manilaTimestamp.getDay(); // Get the day of the week in Manila time (0-6)
-
-        if (!(day in dailyPhValues)) {
-          dailyPhValues[day] = [];
+    if (deviceAddress !== '00000000') {
+      const historyRef = database.ref(`/sensorData/pH-${deviceAddress}s`);
+  
+      historyRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        const dailyPhValues = {};
+  
+        // Loop through the data and organize pH values by day
+        for (const key in data) {
+          const timestamp = key.split('_')[0]; // Extract the date part
+          const utcTimestamp = new Date(timestamp); // Create a Date object using the provided timestamp
+          const manilaTimestamp = new Date(utcTimestamp.getTime() + 8 * 60 * 60 * 1000); // Convert UTC time to Manila time (UTC+8)
+  
+          const day = manilaTimestamp.getDay(); // Get the day of the week in Manila time (0-6)
+  
+          if (!(day in dailyPhValues)) {
+            dailyPhValues[day] = [];
+          }
+  
+          dailyPhValues[day].push(parseFloat(data[key])); // Store pH values by day
         }
-
-        dailyPhValues[day].push(parseFloat(data[key])); // Store pH values by day
-      }
-
-      // Calculate daily pH averages
-      const averages = [0, 0, 0, 0, 0, 0, 0];
-      for (const day in dailyPhValues) {
-        const phValues = dailyPhValues[day];
-        if (phValues.length > 0) {
-          const average = phValues.reduce((acc, val) => acc + val, 0) / phValues.length;
-          averages[day] = average;
+  
+        // Calculate daily pH averages
+        const averages = [0, 0, 0, 0, 0, 0, 0];
+        for (const day in dailyPhValues) {
+          const phValues = dailyPhValues[day];
+          if (phValues.length > 0) {
+            const average = phValues.reduce((acc, val) => acc + val, 0) / phValues.length;
+            averages[day] = average;
+          }
         }
-      }
-
-      setDailyAverages(averages); // Update daily pH averages state
-    });
-
-    return () => historyRef.off('value'); // Cleanup Firebase listener for pH history
-  }, []);
+  
+        setDailyAverages(averages); // Update daily pH averages state
+      });
+  
+      return () => historyRef.off('value'); // Cleanup Firebase listener for pH history
+    }
+  }, [deviceAddress]);
 
   return (
     <View style={styles.container}>
@@ -250,6 +311,16 @@ const TurbidityScreen = () => {
   const [turbidity, setTurbidity] = useState(null);
   const [conditionMessage, setConditionMessage] = useState('Loading...');
   const [dailyAverages, setDailyAverages] = useState([0, 0, 0, 0, 0, 0, 0]); // Initialize daily averages
+  const [deviceAddress, setDeviceAddress] = useState('00000000'); // Initial value
+
+  useEffect(() => {
+    const fetchDeviceAddressAndUpdateState = async () => {
+      const address = await fetchDeviceAddress();
+      setDeviceAddress(address);
+    };
+
+    fetchDeviceAddressAndUpdateState();
+  }, []);
 
   const data = {
     labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -269,68 +340,75 @@ const TurbidityScreen = () => {
   };
 
   useEffect(() => {
-    const turbidityRef = database.ref('/sensorData/turbidity/turbidity');
-
-    turbidityRef.on('value', (snapshot) => {
-      const turbidityValue = snapshot.val();
-      setTurbidity(turbidityValue);
-
-      // Check turbidity conditions based on the current turbidity value
-      if (turbidityValue !== null) {
-        if (turbidityValue >= 10 && turbidityValue <= 20) {
-          setConditionMessage('Optimal (Growth)');
-        } else if (turbidityValue >= 5 && turbidityValue < 10) {
-          setConditionMessage('Acceptable');
-        } else if (turbidityValue >= 1 && turbidityValue < 5) {
-          setConditionMessage('Suboptimal');
-        } else if (turbidityValue <= 1) {
-          setConditionMessage('Too Clear');
-        } else {
-          setConditionMessage('Too Cloudy');
+    if (deviceAddress !== '00000000') {
+      const turbidityRef = database.ref(`/sensorData/turbidity-${deviceAddress}/turbidity-${deviceAddress}`);
+  
+      turbidityRef.on('value', (snapshot) => {
+        const turbidityValue = snapshot.val();
+        setTurbidity(turbidityValue);
+  
+        // Check turbidity conditions based on the current turbidity value
+        if (turbidityValue !== null) {
+          if (turbidityValue >= 10 && turbidityValue <= 20) {
+            setConditionMessage('Optimal (Growth)');
+          } else if (turbidityValue >= 5 && turbidityValue < 10) {
+            setConditionMessage('Acceptable');
+          } else if (turbidityValue >= 1 && turbidityValue < 5) {
+            setConditionMessage('Suboptimal');
+          } else if (turbidityValue <= 1) {
+            setConditionMessage('Too Clear');
+          } else {
+            setConditionMessage('Too Cloudy');
+          }
         }
-      }
-    });
-
-    return () => turbidityRef.off('value'); // Cleanup Firebase listener for real-time turbidity data
-  }, []);
+      });
+  
+      return () => turbidityRef.off('value'); // Cleanup Firebase listener for real-time turbidity data
+    } else {
+      setTurbidity('0');
+      setConditionMessage('No device ID.')
+    }
+  }, [deviceAddress]);
 
   useEffect(() => {
-    const historyRef = database.ref('/sensorData/turbiditys');
-
-    historyRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      const dailyTurbidityValues = {};
-
-      // Loop through the data and organize turbidity values by day
-      for (const key in data) {
-        const timestamp = key.split('_')[0]; // Extract the date part
-        const utcTimestamp = new Date(timestamp); // Create a Date object using the provided timestamp
-        const manilaTimestamp = new Date(utcTimestamp.getTime() + 8 * 60 * 60 * 1000); // Convert UTC time to Manila time (UTC+8)
-
-        const day = manilaTimestamp.getDay(); // Get the day of the week in Manila time (0-6)
-
-        if (!(day in dailyTurbidityValues)) {
-          dailyTurbidityValues[day] = [];
+    if (deviceAddress !== '00000000') {
+      const historyRef = database.ref(`/sensorData/turbidity-${deviceAddress}s`);
+  
+      historyRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        const dailyTurbidityValues = {};
+  
+        // Loop through the data and organize turbidity values by day
+        for (const key in data) {
+          const timestamp = key.split('_')[0]; // Extract the date part
+          const utcTimestamp = new Date(timestamp); // Create a Date object using the provided timestamp
+          const manilaTimestamp = new Date(utcTimestamp.getTime() + 8 * 60 * 60 * 1000); // Convert UTC time to Manila time (UTC+8)
+  
+          const day = manilaTimestamp.getDay(); // Get the day of the week in Manila time (0-6)
+  
+          if (!(day in dailyTurbidityValues)) {
+            dailyTurbidityValues[day] = [];
+          }
+  
+          dailyTurbidityValues[day].push(parseFloat(data[key])); // Store turbidity values by day
         }
-
-        dailyTurbidityValues[day].push(parseFloat(data[key])); // Store turbidity values by day
-      }
-
-      // Calculate daily turbidity averages
-      const averages = [0, 0, 0, 0, 0, 0, 0];
-      for (const day in dailyTurbidityValues) {
-        const turbidityValues = dailyTurbidityValues[day];
-        if (turbidityValues.length > 0) {
-          const average = turbidityValues.reduce((acc, val) => acc + val, 0) / turbidityValues.length;
-          averages[day] = average;
+  
+        // Calculate daily turbidity averages
+        const averages = [0, 0, 0, 0, 0, 0, 0];
+        for (const day in dailyTurbidityValues) {
+          const turbidityValues = dailyTurbidityValues[day];
+          if (turbidityValues.length > 0) {
+            const average = turbidityValues.reduce((acc, val) => acc + val, 0) / turbidityValues.length;
+            averages[day] = average;
+          }
         }
-      }
-
-      setDailyAverages(averages); // Update daily turbidity averages state
-    });
-
-    return () => historyRef.off('value'); // Cleanup Firebase listener for turbidity history
-  }, []);
+  
+        setDailyAverages(averages); // Update daily turbidity averages state
+      });
+  
+      return () => historyRef.off('value'); // Cleanup Firebase listener for turbidity history
+    }
+  }, [deviceAddress]);
 
   return (
     <View style={styles.container}>
@@ -363,18 +441,17 @@ const TurbidityScreen = () => {
   );
 };
 
-const EditDeviceAddressModal = ({ visible, onClose, onSave }) => {
-  const [address, setAddress] = useState('');
+const EditDeviceAddressModal = ({ visible, onClose, onSave, currentAddress  }) => {
+  const [address, setAddress] = useState(currentAddress || '');
 
   const handleSave = () => {
-    // Validate the address (e.g., check if it's 8 digits)
     if (address.length === 8) {
-      onSave(address);
+      onSave(address, () => onClose()); // Pass address and close function to onSave
     } else {
       alert('Please enter a valid 8-digit address.');
     }
   };
-
+  
   return (
     <Modal visible={visible} animationType="slide">
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -407,15 +484,43 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [newAddress, setNewAddress] = useState('');
+  const [currentAddress, setCurrentAddress] = useState('');
 
-  const handleSaveAddress = (address) => {
-    // Save the 8-digit address to the database
-    // Implement your logic to save the address in the database (e.g., using Firebase)
-    console.log('New address:', address);
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userEmail = currentUser.email.replace('.', '_');
+      const userAddressRef = database.ref(`users/${userEmail}/address_number`);
 
-    // Close the modal
-    setModalVisible(false);
+      userAddressRef.once('value', (snapshot) => {
+        const addressData = snapshot.val();
+        if (addressData) {
+          setCurrentAddress(addressData); // Set the current address if it exists
+        }
+      });
+    }
+  }, []);
+
+  const handleSaveAddress = (address, closeModal) => {
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+      const userEmail = currentUser.email.replace('.', '_');
+      const userAddressRef = database.ref(`users/${userEmail}/address_number`);
+      
+      const serializedAddress = address.toString();
+
+      userAddressRef.set(serializedAddress)
+        .then(() => {
+          //console.log('Address saved successfully:', serializedAddress);
+          closeModal(); // Close the modal after successful save
+        })
+        .catch((error) => {
+          //console.error('Error saving address:', error);
+        });
+    } else {
+      //console.error('No user is currently authenticated.');
+    }
   };
 
   return (
@@ -448,6 +553,7 @@ const SettingsScreen = ({ navigation }) => {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSave={handleSaveAddress}
+        currentAddress={currentAddress}
       />
       
     </KeyboardAvoidingView>
