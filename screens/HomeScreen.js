@@ -414,10 +414,10 @@ const TurbidityScreen = () => {
     <View style={styles.container}>
       {/* Top Container */}
       <View style={styles.topContainer}>
-        <Ionicons name="md-thermometer" size={100} color="dodgerblue" />
+        <Ionicons name="ios-speedometer" size={100} color="dodgerblue" />
         <View>
           <Text style={styles.textReading}>
-            {turbidity !== null ? turbidity + ' °C' : 'Loading...'}
+            {turbidity !== null ? turbidity + ' NTU' : 'Loading...'}
           </Text>
           <Text style={styles.textCondition}>Condition: {conditionMessage}</Text>
         </View>
