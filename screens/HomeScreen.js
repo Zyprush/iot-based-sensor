@@ -49,6 +49,7 @@ const Tab = createBottomTabNavigator();
 const TemperatureScreen = () => {
   const [temperature, setTemperature] = useState(null);
   const [conditionMessage, setConditionMessage] = useState("Loading...");
+  const [conditionColor, setConditionColor] = useState("dodgerblue");
   const [dailyAverages, setDailyAverages] = useState(
     Array.from({ length: 24 }, () => 0)
   ); // Initialize hourly averages
@@ -116,8 +117,8 @@ const TemperatureScreen = () => {
   };
 
   const chartConfig = {
-    backgroundGradientFrom: "dodgerblue",
-    backgroundGradientTo: "dodgerblue",
+    backgroundGradientFrom: conditionColor,
+    backgroundGradientTo: conditionColor,
     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
   };
 
@@ -133,15 +134,20 @@ const TemperatureScreen = () => {
         // Check temperature conditions based on the current temperature value
         if (temperatureValue !== null) {
           if (temperatureValue >= 30 && temperatureValue <= 32) {
-            setConditionMessage("Optimal (Growth)");
+            setConditionMessage("Optimal");
+            setConditionColor("green");
           } else if (temperatureValue >= 27 && temperatureValue < 30) {
             setConditionMessage("Acceptable");
+            setConditionColor("green");
           } else if (temperatureValue >= 20 && temperatureValue < 27) {
             setConditionMessage("Suboptimal");
+            setConditionColor("orange");
           } else if (temperatureValue < 20) {
             setConditionMessage("Too Cold");
+            setConditionColor("red");
           } else {
             setConditionMessage("Too Hot");
+            setConditionColor("red");
           }
         }
       });
@@ -263,12 +269,12 @@ const TemperatureScreen = () => {
     <View style={styles.container}>
       {/* Top Container */}
       <View style={styles.topContainer}>
-        <Ionicons name="md-thermometer" size={100} color="dodgerblue" />
+        <Ionicons name="md-thermometer" size={100} color={conditionColor} />
         <View>
-          <Text style={styles.textReading}>
+          <Text style={[styles.textReading, { color: conditionColor }]}>
             {temperature !== null ? temperature + " °C" : "Loading..."}
           </Text>
-          <Text style={styles.textCondition}>
+          <Text style={[styles.textCondition, { color: conditionColor }]}>
             Condition: {conditionMessage}
           </Text>
         </View>
@@ -294,6 +300,10 @@ const TemperatureScreen = () => {
               <Text style={styles.modalTitle}>
                 Temperature Conditions Legends
               </Text>
+              <Text>
+                🟢 Okay 🟠 Warning 🔴 Danger
+              </Text>
+              <Text></Text>
               <Text>• Condition: Optimal</Text>
               <Text>
                 -If the temperature is greater than or equal to 30 degrees
@@ -335,13 +345,15 @@ const TemperatureScreen = () => {
       </View>
 
       {/* Bottom Container */}
-      <View style={styles.bottomContainer}>
+      <View
+        style={[styles.bottomContainer, { backgroundColor: conditionColor }]}
+      >
         {/* Toggle Buttons for Daily, Weekly, and Yearly Views */}
         <View style={styles.toggleButtons}>
           <TouchableOpacity
             onPress={() => setSelectedInterval("day")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "day" && styles.selectedButton,
             ]}
           >
@@ -350,7 +362,7 @@ const TemperatureScreen = () => {
           <TouchableOpacity
             onPress={() => setSelectedInterval("week")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "week" && styles.selectedButton,
             ]}
           >
@@ -359,7 +371,7 @@ const TemperatureScreen = () => {
           <TouchableOpacity
             onPress={() => setSelectedInterval("year")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "year" && styles.selectedButton,
             ]}
           >
@@ -368,7 +380,9 @@ const TemperatureScreen = () => {
         </View>
 
         {/* for graph */}
-        <View style={styles.containerGraph}>
+        <View
+          style={[styles.containerGraph, { backgroundColor: conditionColor }]}
+        >
           <View>
             <LineChart
               data={data}
@@ -386,6 +400,7 @@ const TemperatureScreen = () => {
 const PhSensorScreen = () => {
   const [ph, setPh] = useState(null);
   const [conditionMessage, setConditionMessage] = useState("Loading...");
+  const [conditionColor, setConditionColor] = useState("dodgerblue");
   const [dailyAverages, setDailyAverages] = useState(
     Array.from({ length: 24 }, () => 0)
   ); // Initialize hourly averages
@@ -431,8 +446,8 @@ const PhSensorScreen = () => {
   };
 
   const chartConfig = {
-    backgroundGradientFrom: "dodgerblue",
-    backgroundGradientTo: "dodgerblue",
+    backgroundGradientFrom: conditionColor,
+    backgroundGradientTo: conditionColor,
     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
   };
 
@@ -458,14 +473,19 @@ const PhSensorScreen = () => {
         if (phValue !== null) {
           if (phValue >= 8 && phValue <= 9) {
             setConditionMessage("Optimal");
+            setConditionColor("green");
           } else if (phValue >= 6 && phValue < 8) {
             setConditionMessage("Acceptable");
+            setConditionColor("green");
           } else if (phValue >= 5 && phValue < 6) {
             setConditionMessage("Caution");
+            setConditionColor("orange");
           } else if (phValue >= 4 && phValue < 5) {
             setConditionMessage("Alert");
+            setConditionColor("orange");
           } else if (phValue < 4) {
             setConditionMessage("Fatal");
+            setConditionColor("red");
           } else {
             setConditionMessage("Not Suitable");
           }
@@ -584,12 +604,12 @@ const PhSensorScreen = () => {
     <View style={styles.container}>
       {/* Top Container */}
       <View style={styles.topContainer}>
-        <Ionicons name="md-water" size={100} color="dodgerblue" />
+        <Ionicons name="md-water" size={100} color= {conditionColor} />
         <View>
-          <Text style={styles.textReading}>
+          <Text style={[styles.textReading, { color: conditionColor }]}>
             {ph !== null ? ph + " pH" : "Loading..."}
           </Text>
-          <Text style={styles.textCondition}>
+          <Text style={[styles.textCondition, { color: conditionColor }]}>
             Condition: {conditionMessage}
           </Text>
         </View>
@@ -613,6 +633,10 @@ const PhSensorScreen = () => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>pH Conditions Legends</Text>
+              <Text>
+                🟢 Okay 🟠 Warning 🔴 Danger
+              </Text>
+              <Text></Text>
               <Text>• Condition: Optimal</Text>
               <Text>
                 -If the pH level is greater than or equal to 8 and less than or
@@ -656,13 +680,13 @@ const PhSensorScreen = () => {
       </View>
 
       {/* Bottom Container */}
-      <View style={styles.bottomContainer}>
+      <View style={[styles.bottomContainer, { backgroundColor: conditionColor }]}>
         {/* Toggle Buttons for Daily, Weekly, and Yearly Views */}
-        <View style={styles.toggleButtons}>
+        <View style={[styles.toggleButtons, { backgroundColor: conditionColor }]}>
           <TouchableOpacity
             onPress={() => setSelectedInterval("day")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "day" && styles.selectedButton,
             ]}
           >
@@ -671,7 +695,7 @@ const PhSensorScreen = () => {
           <TouchableOpacity
             onPress={() => setSelectedInterval("week")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "week" && styles.selectedButton,
             ]}
           >
@@ -680,7 +704,7 @@ const PhSensorScreen = () => {
           <TouchableOpacity
             onPress={() => setSelectedInterval("year")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "year" && styles.selectedButton,
             ]}
           >
@@ -689,7 +713,7 @@ const PhSensorScreen = () => {
         </View>
 
         {/* for graph */}
-        <View style={styles.containerGraph}>
+        <View style={[styles.containerGraph, { backgroundColor: conditionColor }]}>
           <View>
             <LineChart
               data={data}
@@ -707,6 +731,7 @@ const PhSensorScreen = () => {
 const TurbidityScreen = () => {
   const [turbidity, setTurbidity] = useState(null);
   const [conditionMessage, setConditionMessage] = useState("Loading...");
+  const [conditionColor, setConditionColor] = useState("dodgerblue");
   const [dailyAverages, setDailyAverages] = useState(
     Array.from({ length: 24 }, () => 0)
   ); // Initialize hourly averages
@@ -752,8 +777,8 @@ const TurbidityScreen = () => {
   };
 
   const chartConfig = {
-    backgroundGradientFrom: "dodgerblue",
-    backgroundGradientTo: "dodgerblue",
+    backgroundGradientFrom: conditionColor,
+    backgroundGradientTo: conditionColor,
     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
   };
 
@@ -779,15 +804,20 @@ const TurbidityScreen = () => {
         // Check turbidity conditions based on the current turbidity value
         if (turbidityValue !== null) {
           if (turbidityValue >= 10 && turbidityValue <= 20) {
-            setConditionMessage("Optimal (Growth)");
+            setConditionMessage("Optimal");
+            setConditionColor("green");
           } else if (turbidityValue >= 5 && turbidityValue < 10) {
             setConditionMessage("Acceptable");
+            setConditionColor("green");
           } else if (turbidityValue >= 1 && turbidityValue < 5) {
             setConditionMessage("Suboptimal");
+            setConditionColor("orange");
           } else if (turbidityValue <= 1) {
             setConditionMessage("Too Clear");
+            setConditionColor("red");
           } else {
             setConditionMessage("Too Cloudy");
+            setConditionColor("red");
           }
         }
       });
@@ -909,12 +939,12 @@ const TurbidityScreen = () => {
     <View style={styles.container}>
       {/* Top Container */}
       <View style={styles.topContainer}>
-        <Ionicons name="ios-speedometer" size={100} color="dodgerblue" />
+        <Ionicons name="ios-speedometer" size={100} color= {conditionColor} />
         <View>
-          <Text style={styles.textReading}>
+          <Text style={[styles.textReading, { color: conditionColor }]}>
             {turbidity !== null ? turbidity + " NTU" : "Loading..."}
           </Text>
-          <Text style={styles.textCondition}>
+          <Text style={[styles.textCondition, { color: conditionColor }]}>
             Condition: {conditionMessage}
           </Text>
         </View>
@@ -937,26 +967,39 @@ const TurbidityScreen = () => {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Turbidity Conditions Legends</Text>
+              <Text style={styles.modalTitle}>
+                Turbidity Conditions Legends
+              </Text>
+              <Text>
+                🟢 Okay 🟠 Warning 🔴 Danger
+              </Text>
+              <Text></Text>
               <Text>• Condition: Optimal</Text>
               <Text>
-                -If the turbidity level is between 10 and 20 (inclusive), it displays the message "Condition: Optimal".
+                -If the turbidity level is between 10 and 20 (inclusive), it
+                displays the message "Condition: Optimal".
               </Text>
               <Text>• Condition: Acceptable</Text>
               <Text>
-                -If the turbidity level is between 5 and 10 (exclusive), it displays the message "Condition: Acceptable".
+                -If the turbidity level is between 5 and 10 (exclusive), it
+                displays the message "Condition: Acceptable".
               </Text>
               <Text>• Condition: Sub-Optimal</Text>
               <Text>
-                -If the turbidity level is between 1 and 5 (exclusive), it displays the message "Condition: Sub-optimal".
+                -If the turbidity level is between 1 and 5 (exclusive), it
+                displays the message "Condition: Sub-optimal".
               </Text>
               <Text>• Condition: Too Clear</Text>
               <Text>
-                -If the turbidity level is less than or equal to 1, indicating very low turbidity (water is too clear), it displays the message "Condition: Too Clear".
+                -If the turbidity level is less than or equal to 1, indicating
+                very low turbidity (water is too clear), it displays the message
+                "Condition: Too Clear".
               </Text>
               <Text>• Condition: Too Cloudy</Text>
               <Text>
-                -If none of the above conditions are met, indicating high turbidity (water is too cloudy), it displays the message "Condition: Too Cloudy”.
+                -If none of the above conditions are met, indicating high
+                turbidity (water is too cloudy), it displays the message
+                "Condition: Too Cloudy”.
               </Text>
               <TouchableOpacity
                 style={styles.modalCloseButton}
@@ -967,17 +1010,16 @@ const TurbidityScreen = () => {
             </View>
           </View>
         </Modal>
-
       </View>
 
       {/* Bottom Container */}
-      <View style={styles.bottomContainer}>
+      <View style={[styles.bottomContainer, { backgroundColor: conditionColor }]}>
         {/* Toggle Buttons for Daily, Weekly, and Yearly Views */}
-        <View style={styles.toggleButtons}>
+        <View style={[styles.toggleButtons, { backgroundColor: conditionColor }]}>
           <TouchableOpacity
             onPress={() => setSelectedInterval("day")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "day" && styles.selectedButton,
             ]}
           >
@@ -986,7 +1028,7 @@ const TurbidityScreen = () => {
           <TouchableOpacity
             onPress={() => setSelectedInterval("week")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "week" && styles.selectedButton,
             ]}
           >
@@ -995,7 +1037,7 @@ const TurbidityScreen = () => {
           <TouchableOpacity
             onPress={() => setSelectedInterval("year")}
             style={[
-              styles.toggleButton,
+              [styles.toggleButton, { backgroundColor: conditionColor }],
               selectedInterval === "year" && styles.selectedButton,
             ]}
           >
@@ -1004,7 +1046,7 @@ const TurbidityScreen = () => {
         </View>
 
         {/* for graph */}
-        <View style={styles.containerGraph}>
+        <View style={[styles.containerGraph, { backgroundColor: conditionColor }]}>
           <View>
             <LineChart
               data={data}
@@ -1275,7 +1317,6 @@ const styles = StyleSheet.create({
   },
   textReading: {
     fontSize: 50,
-    color: "dodgerblue",
     fontWeight: "bold",
   },
   textCondition: {
@@ -1311,7 +1352,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selectedButton: {
-    backgroundColor: "lightblue", // Change the background color for the selected button
+    backgroundColor: "black",
   },
 
   modalContainer: {
@@ -1346,5 +1387,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
+  },
+  textLegend: {
+    position: "absolute",
+    top: 15,
+    left: 15,
   },
 });
