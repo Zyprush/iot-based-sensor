@@ -1,20 +1,20 @@
 <div align="center">
   <br />
     <a href="#" target="_blank">
-      <img src="/assets/img/dict-banner.png" alt="Project Banner">
+      <img src="/assets/github-banner.png" alt="Project Banner">
     </a>
   <br />
 
   <div>
-    <img src="https://img.shields.io/badge/-HTML-black?style=for-the-badge&logoColor=white&logo=html5&color=e34c26" alt="html" />
+    <img src="https://img.shields.io/badge/-React%20Native-black?style=for-the-badge&logoColor=black&logo=react&color=61DBFB" alt="react" />
     <img src="https://img.shields.io/badge/-Java%20Script-black?style=for-the-badge&logoColor=black&logo=JAVASCRIPT&color=f0db4f" alt="js" />
-    <img src="https://img.shields.io/badge/-PHP-black?style=for-the-badge&logoColor=white&logo=php&color=777BB3" alt="PHP" />
+    <img src="https://img.shields.io/badge/-Node.js-black?style=for-the-badge&logoColor=white&logo=node.js&color=3c873a" alt="js" />
   </div>
 
-  <h3 align="center">A Webinar Certificates generator webapp.</h3>
+  <h3 align="center">A Cross-Platform Mobile Application for Fishpond IOT based sensor.</h3>
 
    <div align="center">
-     Build this webapp as a part of 500 hours Internship in Department of Information and Communications Technology <a href="https://dictregion4.com" target="_blank"><b>DICT MIMAROPA</b></a>. 
+     Build this webapp as a part of freelancing for a IoT based water fishpond sensors.
     </div>
 </div>
 
@@ -28,34 +28,22 @@
 
 ## <a name="introduction">🤖 Introduction</a>
 
-Welcome to the repository for the DICT Region 4 Mamburao Office Webinar Certificate Generator project! This initiative was conceived and proposed by our talented interns, <a href="https://jakedenver.com" target="_blank"><b>Jake Denver Alberio</b></a> and Hanz Bausa, during their internship at the Department of Information and Communications Technology (DICT) Region 4 Mamburao Office.
-
-Project Overview
-The primary objective of this project is to streamline and automate the process of generating and distributing certificates for all upcoming DICT webinars. In today's digital age, where remote engagements and online learning have become the norm, providing participants with timely and professionally crafted certificates is crucial. Jake and Hanz recognized this need and embarked on a mission to develop a user-friendly website that not only creates certificates but also automatically dispatches them via email.
-
-Contributions
-We encourage contributions from the open-source community to enhance and improve this certificate generator. Feel free to fork this repository, make your modifications, and submit pull requests. Together, let's make the DICT Region 4 Mamburao Office Webinar Certificate Generator an efficient and reliable tool for webinar certification.
-
-Thank you for your interest and support in advancing digital solutions for the Department of Information and Communications Technology!
+Welcome to the repository housing the React Native app for the IoT Based Fishpond Water Sensors project! Crafted and developed by the skilled hands of <a href="https://jakedenver.com" target="_blank"><b>Jake Denver Alberio</b></a> during his freelancing journey, this application is designed to interface with innovative water sensors tailored for fishpond management. Dive in to explore the codebase, contribute, and join us in revolutionizing aquatic monitoring technology.
 
 ## <a name="tech-stack">⚙️ Tech Stack</a>
 
-- PHP
-- HTML
+- React Native
+- Expo CLI
 - Java Script
-- MySQL
-- Bootstrap
-- Composer
+- Node.js
 
 ## <a name="features">🔋 Features</a>
 
-👉 **Automated Certificate Generation**: The web application will generate certificates seamlessly, ensuring accuracy and consistency in the certification process.
+👉 **Reads and Display the sensors reading**: The native application will display sensors reading seamlessly, ensuring accuracy and consistency in the application process.
 
-👉 **Email Integration**: Certificates will be automatically sent to participants via email, reducing manual effort and ensuring swift delivery.
+👉 **Cross-Platform**: The application was created using React Native as it will be a cross platform mobile application.
 
-👉 **User-Friendly Interface**: The website will boast an intuitive and easy-to-navigate design, making it accessible for both administrators and participants.
-
-👉 **Customization Options**: The platform will provide customization features, allowing administrators to tailor certificates to the specific requirements of each webinar.
+👉 **User-Friendly Interface**: The mobile app will boast an intuitive and easy-to-navigate design, making it accessible for both administrators and participants.
 
 ## <a name="quick-start">🤸 Quick Start</a>
 
@@ -65,35 +53,36 @@ Follow these steps to set up the project locally on your machine.
 
 Make sure you have the following installed on your machine:
 
-- [xampp](https://www.apachefriends.org/)
+- [nodejs](https://https://nodejs.org/)
 - [Git](https://git-scm.com/)
 - [VS code](https://code.visualstudio.com/download)
-- [composer](https://getcomposer.org/)
 
 **Cloning the Repository**
 
 ```bash
-git clone git@github.com/Zyprush/dictoccmincertgen.git
-cd dictoccmincertgen
+git clone git@github.com/Zyprush/iot-based-sensor.git
+cd iot-based-sensor
 ```
 
 **Installation**
 
-Install the project libraries using composer:
+Install the project libraries using npm:
 
 ```bash
-composer install
-composer update
+npm install
 ```
 
 **Running the Project**
 
-if you add the project to 
+if you add the project to
+
 ```bash
-htdocs
+npm start
+
+a for android
+i for ios
 ```
-then you can just Open [http://localhost/dictoccmincertgen](http://localhost/dictoccmincertgen) 
-in your browser to view the project.
+
 
 ## <a name="more">🚀 More</a>
 
